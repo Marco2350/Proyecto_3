@@ -1,3 +1,4 @@
+import 'package:checkmate/src/pages/calendar.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(ReminderApp());
@@ -12,6 +13,14 @@ class ReminderApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: ReminderList(title: 'Pending Tasks'),
+      onGenerateRoute: (RouteSettings settings){
+        switch(settings.name){
+          case '/home':
+            return MaterialPageRoute(builder: (context) => ReminderApp());
+          case '/calendar':
+            return MaterialPageRoute(builder: (context) => Calendar());
+        }
+      },
     );
   }
 }
@@ -27,6 +36,7 @@ class ReminderList extends StatefulWidget {
 
 class _ReminderListState extends State<ReminderList> {
   List<Reminder> _reminders = [];
+  List<bool> isChecked = [];
 
   void _addReminder(String title, String description) {
     setState(() {
@@ -36,24 +46,85 @@ class _ReminderListState extends State<ReminderList> {
 
   @override
   Widget build(BuildContext context) {
+
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.blue;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+      ),
+      bottomNavigationBar: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => Calendar(),
+                  ),
+                );
+              },
+              icon: Icon(Icons.calendar_month)),
+        ]
       ),
       body: ListView.builder(
         itemCount: _reminders.length,
         itemBuilder: (context, index) {
           final reminder = _reminders[index];
-          return ListTile(
-            title: Text(reminder.title),
-            subtitle: Text(reminder.description),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                setState(() {
-                  _reminders.removeAt(index);
-                });
-              },
+          bool check = false;
+          isChecked.add(check);
+
+          Text titleDim = Text(
+              '${reminder.title}',
+              style: TextStyle(
+                  fontWeight:
+                      isChecked[index] ? FontWeight.normal : FontWeight.bold,
+                  decoration: isChecked[index]
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none),
+            );
+            Text subtitleDim = Text(
+              '${reminder.description}  -  ${isChecked[index]? 'Done':'In Progress'}',
+              style: TextStyle(
+                  fontWeight:
+                      isChecked[index] ? FontWeight.normal : FontWeight.bold,
+                  decoration: isChecked[index]
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none),
+            );
+
+          return Card(
+            elevation: 2.0,
+            child: ListTile(
+              title: titleDim,
+              subtitle: subtitleDim,
+              leading: Checkbox(
+                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                  value: isChecked[index],
+                  onChanged: (value) {
+                    setState(() {
+                      isChecked[index] = value!;
+                    });
+                  },
+                ),
+              trailing: IconButton(
+                icon: Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    _reminders.removeAt(index);
+                  });
+                },
+              ),
             ),
           );
         },
