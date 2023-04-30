@@ -43,11 +43,6 @@ class _ReminderListState extends State<ReminderList> {
   List<Reminder> _reminders = [];
   List<bool> isChecked = [];
   
-  get titleDim => null;
-  
-  get subtitleDim => null;
-  
-  MaterialPropertyResolver<Color?>? get getColor => null;
 
   void _addReminder(String title, String description, DateTime date) {
     setState(() {
@@ -57,7 +52,18 @@ class _ReminderListState extends State<ReminderList> {
 
   @override
   Widget build(BuildContext context) {
-    // ...
+    
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.blue;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -86,7 +92,24 @@ class _ReminderListState extends State<ReminderList> {
           bool check = false;
           isChecked.add(check);
 
-          // ...
+          Text titleDim = Text(
+              '${reminder.title}',
+              style: TextStyle(
+                  fontWeight:
+                      isChecked[index] ? FontWeight.normal : FontWeight.bold,
+                  decoration: isChecked[index]
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none),
+            );
+            Text subtitleDim = Text(
+              '${reminder.description}  -  ${isChecked[index]? 'Done':'In Progress'}',
+              style: TextStyle(
+                  fontWeight:
+                      isChecked[index] ? FontWeight.normal : FontWeight.bold,
+                  decoration: isChecked[index]
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none),
+            );
 
           return Card(
             elevation: 2.0,
@@ -94,7 +117,7 @@ class _ReminderListState extends State<ReminderList> {
               title: titleDim,
               subtitle: subtitleDim,
               leading: Checkbox(
-                fillColor: MaterialStateProperty.resolveWith(getColor!),
+                fillColor: MaterialStateProperty.resolveWith(getColor),
                 value: isChecked[index],
                 onChanged: (value) {
                   setState(() {
@@ -116,7 +139,6 @@ class _ReminderListState extends State<ReminderList> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          try {
             showDialog(
               context: context,
               builder: (context) => ReminderDialog(
@@ -126,10 +148,9 @@ class _ReminderListState extends State<ReminderList> {
                 },
               ),
             );
-          } catch (e) {
-            print('Error adding reminder: $e');
-          }
         },
+        tooltip: 'New Reminder',
+        child: Icon(Icons.add),
       ),
     );
   }
@@ -222,7 +243,6 @@ class _ReminderDialogState extends State<ReminderDialog> {
               _descriptionController.text,
               _selectedDate,
             );
-            Navigator.pop(context);
           },
         ),
       ],
