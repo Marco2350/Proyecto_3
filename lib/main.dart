@@ -98,6 +98,8 @@ class ReminderList extends StatefulWidget {
 class _ReminderListState extends State<ReminderList> {
   List<Reminder> _reminders = [];
   List<bool> isChecked = [];
+  String searchText = '';
+  bool isSearching = false;
   
 
   void _addReminder(String title, String description, DateTime date) {
@@ -122,8 +124,33 @@ class _ReminderListState extends State<ReminderList> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      appBar: AppBar(        
+        title: isSearching
+            ? TextField(
+                onChanged: (value) {
+                  setState(() {
+                    searchText = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                  border: InputBorder.none,
+                ),
+              )
+            : Text('Check Mate'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                if (isSearching) {
+                  searchText = '';
+                }
+                isSearching = !isSearching;
+              });
+            },
+            icon: Icon(isSearching ? Icons.cancel : Icons.search),
+          ),
+        ],
       ),
       bottomNavigationBar: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -145,6 +172,10 @@ class _ReminderListState extends State<ReminderList> {
         itemCount: _reminders.length,
         itemBuilder: (context, index) {
           final reminder = _reminders[index];
+          if (reminder.title.toLowerCase().contains(searchText.toLowerCase()) ||
+              reminder.description
+                  .toLowerCase()
+                  .contains(searchText.toLowerCase())) {
           bool check = false;
           isChecked.add(check);
 
@@ -191,6 +222,9 @@ class _ReminderListState extends State<ReminderList> {
               ),
             ),
           );
+          } else {
+            return Container();
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(
